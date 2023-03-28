@@ -10,10 +10,11 @@ app.use(express.json());
 app.use(cors());
 
 const connection = mysql.createPool({
-    user: "freedb_bashar",
+    user: "freedb_adminBashar",
     host: "sql.freedb.tech",
     password: process.env.DB_PWD,
     database: "freedb_adminka",
+    multipleStatements: true,
 });
 
 // api services
@@ -57,25 +58,30 @@ app.post("/register", (req, res) => {
 app.post("/login", (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
-
-    connection.query(
-        "SELECT * FROM users WHERE username = ? AND password = ?",
-        [username, password],
-        (err, result) => {
-            if (err) {
-                req.setEncoding({ err: err });
-            } else {
-                if (result.length > 0) {
-                    res.send(result);
+    const lastLoginTime = new Date();
+    // UPDATE users SET lastLoginTime = ? WHERE status = 'active' AND username = ? AND password = ?; 
+    const status = "active";
+    if (username && password) {
+        connection.query(
+            "UPDATE users SET lastLoginTime = ? WHERE status = 'active' AND username = ? AND password = ?",
+            [lastLoginTime, username, password],
+            (err, result) => {
+                if (err) {
+                    throw err;
                 } else {
-                    res.status(err.status || 500).json({
-                        status: err.status,
-                        message: err.message,
-                    });
+                    connection.query("SELECT * FROM users WHERE status = 'active' AND username = ? AND password = ?", [username, password], (err,result)=>{
+                        if(err){
+                            throw err
+                        } else {
+                            res.send(result)
+                        }
+                    })
+                    // res.send(result);
                 }
             }
-        }
-    );
+        );
+    }
+
 });
 
 app.post("/block", (req, res) => {
@@ -87,7 +93,6 @@ app.post("/block", (req, res) => {
         (err, result) => {
             if (err) {
                 req.setEncoding({ err: err });
-              
             } else {
                 res.send(result);
                 console.log(result.affectedRows + " record(s) updated");
@@ -97,40 +102,39 @@ app.post("/block", (req, res) => {
 });
 
 app.post("/unblock", (req, res) => {
-  const username = req.body.username;
+    const username = req.body.username;
 
-  connection.query(
-      "UPDATE users SET status = 'active' WHERE username = ?",
-      [username],
-      (err, result) => {
-          if (err) {
-              req.setEncoding({ err: err });
-          } else {
-              res.send(result);
-              console.log(result.affectedRows + " record(s) updated");
-          }
-      }
-  );
+    connection.query(
+        "UPDATE users SET status = 'active' WHERE username = ?",
+        [username],
+        (err, result) => {
+            if (err) {
+                req.setEncoding({ err: err });
+            } else {
+                res.send(result);
+                console.log(result.affectedRows + " record(s) updated");
+            }
+        }
+    );
 });
-
 
 app.post("/delete", (req, res) => {
-  const username = req.body.username;
+    const username = req.body.username;
 
-  connection.query(
-      "DELETE FROM users WHERE username=?",
-      [username],
-      (err, result) => {
-          if (err) {
-              req.setEncoding({ err: err });
-          } else {
-              res.send(result);
-              console.log(result.affectedRows + " record(s) updated");
-          }
-      }
-  );
+    connection.query(
+        "DELETE FROM users WHERE username=?",
+        [username],
+        (err, result) => {
+            if (err) {
+                req.setEncoding({ err: err });
+            } else {
+                res.send(result);
+                console.log(result.affectedRows + " record(s) updated");
+            }
+        }
+    );
 });
 
-app.listen(3001, () => {
-    console.log("server running on port:3001");
+app.listen(process.env.PORT || 3001, () => {
+    console.log("server running");
 });
