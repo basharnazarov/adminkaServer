@@ -55,6 +55,44 @@ app.post("/register", (req, res) => {
     );
 });
 
+app.post("/create", (req, res) => {
+    const username = req.body.username;
+    const title = req.body.title
+    const message = req.body.message
+    connection.query(
+        "INSERT INTO messages (username, title, message) VALUES (?, ?, ?)",
+        [username, title, message],
+        (err, result) => {
+            if (result) {
+                res.send(result);
+            } else {
+                res.status(err.status || 500).json({
+                    status: err.status,
+                    message: err.message,
+                });
+            }
+        }
+    );
+});
+
+app.post("/messages", (req, res) => {
+    const username = req.body.username;
+    connection.query(
+        "SELECT * FROM messages WHERE username = ?",
+        [username],
+        (err, result) => {
+            if (result) {
+                res.send(result);
+            } else {
+                res.status(err.status || 500).json({
+                    status: err.status,
+                    message: err.message,
+                });
+            }
+        }
+    );
+});
+
 app.post("/login", (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
@@ -134,6 +172,7 @@ app.post("/delete", (req, res) => {
         }
     );
 });
+
 
 app.listen(process.env.PORT || 3001, () => {
     console.log("server running");
