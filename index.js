@@ -12,7 +12,7 @@ app.use(cors());
 const connection = mysql.createPool({
     user: "freedb_adminBashar",
     host: "sql.freedb.tech",
-    password: process.env.DB_PWD,
+    password: '6CW6zx8&2aFRGa5',
     database: "freedb_adminka",
     multipleStatements: true,
 });
