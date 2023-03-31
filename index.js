@@ -31,6 +31,19 @@ app.get("/users", (req, res) => {
     });
 });
 
+app.get("/recipients", (req, res) => {
+    connection.query("SELECT sender FROM messages", (err, result) => {
+        if (result) {
+            res.send(result);
+        } else {
+            res.status(err.status || 500).json({
+                status: err.status,
+                message: err.message,
+            });
+        }
+    });
+});
+
 app.post("/register", (req, res) => {
     const username = req.body.username;
     const email = req.body.email;
@@ -59,9 +72,10 @@ app.post("/create", (req, res) => {
     const username = req.body.username;
     const title = req.body.title
     const message = req.body.message
+    const sender = req.body.sender
     connection.query(
-        "INSERT INTO messages (username, title, message) VALUES (?, ?, ?)",
-        [username, title, message],
+        "INSERT INTO messages (username, title, message, sender) VALUES (?, ?, ?, ?)",
+        [username, title, message, sender],
         (err, result) => {
             if (result) {
                 res.send(result);
