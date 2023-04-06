@@ -10,10 +10,10 @@ app.use(express.json());
 app.use(cors());
 
 const connection = mysql.createPool({
-    user: "freedb_adminBashar",
-    host: "sql.freedb.tech",
-    password: '6CW6zx8&2aFRGa5',
-    database: "freedb_adminka",
+    user: process.env.DB_USER,
+    host: process.env.DB_HOST,
+    password: process.env.DB_PWD,
+    database: process.env.DB_NAME,
     multipleStatements: true,
 });
 
