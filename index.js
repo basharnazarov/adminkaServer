@@ -24,11 +24,11 @@ app.use(passport.session());
 app.use(express.json());
 app.use(
     cors({
-      origin: "http://localhost:3000",
-      methods: "GET,POST,PUT,DELETE",
-      credentials: true,
+        origin: "http://localhost:3000",
+        methods: "GET,POST,PUT,DELETE",
+        credentials: true,
     })
-  );
+);
 
 const connection = mysql.createConnection({
     user: process.env.DB_USER,
@@ -44,7 +44,6 @@ connection.connect((err) => {
 });
 
 ///////Google OAuth //////////
-
 
 
 //////////// middlewares //////////////////
@@ -71,7 +70,7 @@ const checkAuthenticated = (req, res, next) => {
 app.post("/createMember", (req, res) => {
     const username = req.body.username;
     const email = req.body.email;
-    const password = req.body.password;
+    const password = req.body.password || "";
     const userRole = "user";
     connection.query(
         "INSERT INTO members (username, email, password,userRole) VALUES (?, ?, ?, ?)",
