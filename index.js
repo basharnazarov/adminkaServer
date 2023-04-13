@@ -2,12 +2,14 @@ const express = require("express");
 const mysql = require("mysql");
 const cors = require("cors");
 const passport = require("passport");
-const passportSetup = require("./passport");
+require("./passport");
 const dotenv = require("dotenv");
 const cookieSession = require("cookie-session");
 dotenv.config();
 const jwt = require("jsonwebtoken");
 const authRoute = require("./routes/auth");
+const { checkAuthenticated, encrypt, decrypt } = require("./middlewares");
+
 const app = express();
 
 app.use(
@@ -43,34 +45,14 @@ connection.connect((err) => {
     console.log("DB connected!");
 });
 
-///////Google OAuth //////////
-
-
-//////////// middlewares //////////////////
-
-const checkAuthenticated = (req, res, next) => {
-    const token = req.headers["x-access-token"];
-
-    if (!token) {
-        res.status(400).send("No access token");
-    } else {
-        jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
-            if (err) {
-                res.status(401);
-                res.json({ auth: false, message: "Unauthorized user" });
-            } else {
-                req.username = decoded.username;
-                next();
-            }
-        });
-    }
-};
 // //////////api services for course project//////////////
 
 app.post("/createMember", (req, res) => {
     const username = req.body.username;
     const email = req.body.email;
-    const password = req.body.password || "";
+    const password = req.body.id
+        ? encrypt(process.env.SECRET_KEY) + req.body.id
+        : encrypt(req.body.password);
     const userRole = "user";
     connection.query(
         "INSERT INTO members (username, email, password,userRole) VALUES (?, ?, ?, ?)",
@@ -90,7 +72,7 @@ app.post("/createMember", (req, res) => {
 
 app.post("/loginMember", (req, res) => {
     const username = req.body.username;
-    const password = req.body.password;
+    const password = encrypt(req.body.password);
 
     if (username && password) {
         connection.query(
