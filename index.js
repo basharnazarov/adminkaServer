@@ -1,5 +1,5 @@
 const express = require("express");
-const mysql = require("mysql");
+const mysql = require("mysql2");
 const cors = require("cors");
 const passport = require("passport");
 require("./passport");
@@ -45,7 +45,7 @@ connection.connect((err) => {
     console.log("DB connected!");
 });
 
-// //////////api services for course project//////////////
+////////////api services for course project//////////////
 
 app.post("/createMember", (req, res) => {
     const username = req.body.username;
