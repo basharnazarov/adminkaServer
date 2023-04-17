@@ -47,6 +47,30 @@ connection.connect((err) => {
 
 ////////////api services for course project//////////////
 
+app.post("/createReview", checkAuthenticated, (req, res) => {
+   const memberId = req.body.memberId
+   const content = req.body.content
+    // const password = req.body.id
+    //     ? encrypt(process.env.SECRET_KEY) + req.body.id
+    //     : encrypt(req.body.password);
+    // const userRole = "user";
+    connection.query(
+        "INSERT INTO reviews (memberId, content) VALUES (?, ?)",
+        [memberId, content],
+        (err, result) => {
+            if (result) {
+                res.send(result);
+            } else {
+                res.status(err.status || 500).json({
+                    status: err.status,
+                    message: err.message,
+                });
+            }
+        }
+    );
+});
+
+
 app.post("/createMember", (req, res) => {
     const username = req.body.username;
     const email = req.body.email;
@@ -97,6 +121,7 @@ app.post("/loginMember", (req, res) => {
                             token,
                             username: result[0].username,
                             email: result[0].email,
+                            createdAt: result[0].createdAt
                         });
                     }
                 } else {
@@ -125,7 +150,9 @@ app.get("/members", checkAuthenticated, (req, res) => {
     });
 });
 
-// //////////api services for tasks //////////////
+
+
+// //////////api services for other tasks //////////////
 app.get("/users", (req, res) => {
     connection.query("SELECT * FROM users", (err, result) => {
         if (result) {
