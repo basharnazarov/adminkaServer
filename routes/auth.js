@@ -18,6 +18,7 @@ router.get("/login/success", authorizeApi, (req, res) => {
             user: {
                 auth: true,
                 token,
+                // memberId: req.user.id,
                 email,
                 username: req.user.displayName,
                 photo: req.user._json.picture,

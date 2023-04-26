@@ -48,15 +48,14 @@ connection.connect((err) => {
 ////////////api services for course project//////////////
 
 app.post("/createReview", checkAuthenticated, (req, res) => {
-   const memberId = req.body.memberId
+
+   const title = req.body.title
    const content = req.body.content
-    // const password = req.body.id
-    //     ? encrypt(process.env.SECRET_KEY) + req.body.id
-    //     : encrypt(req.body.password);
-    // const userRole = "user";
+   const memberId = req.body.memberId
+    
     connection.query(
-        "INSERT INTO reviews (memberId, content) VALUES (?, ?)",
-        [memberId, content],
+        "INSERT INTO reviews ( title, content, memberId) VALUES (?, ?, ?)",
+        [title, content, memberId],
         (err, result) => {
             if (result) {
                 res.send(result);
@@ -70,6 +69,26 @@ app.post("/createReview", checkAuthenticated, (req, res) => {
     );
 });
 
+
+app.post("/reviews", checkAuthenticated, (req, res) => {
+
+    const memberId = req.body.memberId
+     
+     connection.query(
+         "SELECT * FROM reviews WHERE memberId = ?",
+         [memberId],
+         (err, result) => {
+             if (result) {
+                 res.send(result);
+             } else {
+                 res.status(err.status || 500).json({
+                     status: err.status,
+                     message: err.message,
+                 });
+             }
+         }
+     );
+ });
 
 app.post("/createMember", (req, res) => {
     const username = req.body.username;
@@ -119,6 +138,7 @@ app.post("/loginMember", (req, res) => {
                         res.json({
                             auth: true,
                             token,
+                            memberId: result[0].ID,
                             username: result[0].username,
                             email: result[0].email,
                             createdAt: result[0].createdAt
