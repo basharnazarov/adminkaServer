@@ -8,7 +8,8 @@ const cookieSession = require("cookie-session");
 dotenv.config();
 const jwt = require("jsonwebtoken");
 const authRoute = require("./routes/auth");
-const { checkAuthenticated, encrypt, decrypt } = require("./middlewares");
+const { checkAuthenticated, encrypt } = require("./middlewares");
+const { v4 } = require('uuid')
 
 const app = express();
 
@@ -39,6 +40,8 @@ const connection = mysql.createConnection({
     database: process.env.DB_NAME,
     multipleStatements: true,
 });
+
+
 
 connection.connect((err) => {
     if (err) throw err;
@@ -91,6 +94,7 @@ app.post("/reviews", checkAuthenticated, (req, res) => {
  });
 
 app.post("/createMember", (req, res) => {
+    const memberId = v4()
     const username = req.body.username;
     const email = req.body.email;
     const password = req.body.id
@@ -98,8 +102,8 @@ app.post("/createMember", (req, res) => {
         : encrypt(req.body.password);
     const userRole = "user";
     connection.query(
-        "INSERT INTO members (username, email, password,userRole) VALUES (?, ?, ?, ?)",
-        [username, email, password, userRole],
+        "INSERT INTO members (memberId, username, email, password,userRole) VALUES (?, ?, ?, ?, ?)",
+        [memberId, username, email, password, userRole],
         (err, result) => {
             if (result) {
                 res.send(result);
@@ -138,8 +142,8 @@ app.post("/loginMember", (req, res) => {
                         res.json({
                             auth: true,
                             token,
-                            memberId: result[0].ID,
-                            username: result[0].username,
+                            memberId: result[0].memberId,
+                            username,
                             email: result[0].email,
                             createdAt: result[0].createdAt
                         });
@@ -349,3 +353,5 @@ app.use("/auth", authRoute);
 app.listen(process.env.PORT || 5000, () => {
     console.log("server running 5000");
 });
+
+

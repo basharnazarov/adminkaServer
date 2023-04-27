@@ -31,6 +31,7 @@ const decrypt = (encryptedValue) => {
 
 //check authentication
 const authorizeApi = (req, res, next) => {
+
     if (!req.isUnauthenticated()) {
         next();
     } else
