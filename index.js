@@ -50,6 +50,29 @@ connection.connect((err) => {
 
 ////////////api services for course project//////////////
 
+app.post("/createComment", checkAuthenticated, (req, res) => {
+
+    
+    const content = req.body.content
+    const memberId = req.body.memberId
+    const reviewId = req.body.reviewId
+     
+     connection.query(
+         "INSERT INTO comments ( content, memberId, reviewId) VALUES (?, ?, ?)",
+         [content, memberId, reviewId],
+         (err, result) => {
+             if (result) {
+                 res.send(result);
+             } else {
+                 res.status(err.status || 500).json({
+                     status: err.status,
+                     message: err.message,
+                 });
+             }
+         }
+     );
+ });
+
 app.post("/createReview", checkAuthenticated, (req, res) => {
 
    const title = req.body.title
@@ -92,6 +115,19 @@ app.post("/reviews", checkAuthenticated, (req, res) => {
          }
      );
  });
+
+ app.get("/allReviews", (req, res) => {
+    connection.query("SELECT * FROM reviews INNER JOIN members ON reviews.memberId = members.Id", (err, result) => {
+        if (result) {
+            res.send(result);
+        } else {
+            res.status(err.status || 500).json({
+                status: err.status,
+                message: err.message,
+            });
+        }
+    });
+});
 
 app.post("/createMember", (req, res) => {
     const memberId = v4()
