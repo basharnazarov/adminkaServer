@@ -47,6 +47,26 @@ connection.connect((err) => {
 });
 
 ////////////api services for course project//////////////
+app.post("/createRate", checkAuthenticated, (req, res) => {
+  const rate = req.body.rate;
+  const memberId = req.body.memberId;
+  const reviewId = req.body.reviewId;
+
+  connection.query(
+    "INSERT INTO rates (rate, memberId, reviewId) VALUES (?, ?, ?)",
+    [rate, memberId, reviewId],
+    (err, result) => {
+      if (result) {
+        res.send(result);
+      } else {
+        res.status(err.status || 500).json({
+          status: err.status,
+          message: err.message,
+        });
+      }
+    }
+  );
+});
 
 app.post("/createComment", checkAuthenticated, (req, res) => {
   const content = req.body.content;
