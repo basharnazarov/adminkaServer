@@ -13,7 +13,7 @@ const connection = mysql.createConnection({
   multipleStatements: true,
 });
 
-router.get("/login/success", authorizeApi, (req, res) => {
+router.get("/login/success", authorizeApi,(req, res) => {
   if (req.user) {
     const memberId = req.user.id;
     const username = req.user.displayName;
@@ -23,14 +23,16 @@ router.get("/login/success", authorizeApi, (req, res) => {
     const token = jwt.sign({ email }, process.env.SECRET_KEY, {
       expiresIn: "1d",
     });
-
+    
     connection.query(
-      "INSERT INTO members (memberId, username, email, password, userRole) VALUES (?, ?, ?, ?, ?)",
+      "INSERT INTO members (id, username, email, password, userRole) VALUES (?, ?, ?, ?, ?)",
       [memberId, username, email, password, userRole],
       (err, result) => {
         if (result) {
+          console.log('success', result)
           // res.send(result);
         } else {
+          console.log('fail', err)
         //   res.status(err.status || 500).json({
         //     status: err.status,
         //     message: err.message,
@@ -38,7 +40,7 @@ router.get("/login/success", authorizeApi, (req, res) => {
         }
       }
     );
-
+  
     res.status(200).json({
       success: true,
       message: "successfull",

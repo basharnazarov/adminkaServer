@@ -47,17 +47,51 @@ connection.connect((err) => {
 });
 
 ////////////api services for course project//////////////
+
+app.get("/topRated", (req, res) => {
+  connection.query(
+    "select reviews.id, reviews.title, reviews.content, reviews.memberId, members.username, reviews.createdAt, reviews.updatedAt, avg(rates.rate) as rate  from reviews left join members on reviews.memberId = members.id left join rates on reviews.id = rates.reviewId group by reviews.id order by rate desc limit 5",
+    (err, result) => {
+      if (result) {
+        res.send(result);
+      } else {
+        res.status(err.status || 500).json({
+          status: err.status,
+          message: err.message,
+        });
+      }
+    }
+  );
+});
+
 app.post("/createRate", checkAuthenticated, (req, res) => {
   const rate = req.body.rate;
   const memberId = req.body.memberId;
   const reviewId = req.body.reviewId;
 
   connection.query(
-    "INSERT INTO rates (rate, memberId, reviewId) VALUES (?, ?, ?)",
+    "update rates set rate = ? where memberId= ? and reviewId = ?",
     [rate, memberId, reviewId],
     (err, result) => {
       if (result) {
-        res.send(result);
+        if (result.affectedRows === 0) {
+          connection.query(
+            "INSERT INTO rates (rate, memberId, reviewId) VALUES (?, ?, ?)",
+            [rate, memberId, reviewId],
+            (err, result) => {
+              if (result) {
+                res.send(result);
+              } else {
+                res.status(err.status || 500).json({
+                  status: err.status,
+                  message: err.message,
+                });
+              }
+            }
+          );
+        } else {
+          res.send(result);
+        }
       } else {
         res.status(err.status || 500).json({
           status: err.status,
@@ -93,7 +127,7 @@ app.post("/comments", (req, res) => {
   const reviewId = req.body.reviewId;
 
   connection.query(
-    "SELECT * FROM comments WHERE reviewId = ?",
+    "SELECT * FROM comments WHERE reviewId = ? order by comments.createdAt",
     [reviewId],
     (err, result) => {
       if (result) {
@@ -150,7 +184,7 @@ app.post("/reviews", checkAuthenticated, (req, res) => {
 
 app.get("/allReviews", (req, res) => {
   connection.query(
-    "SELECT * FROM reviews INNER JOIN members ON reviews.memberId = members.Id",
+    "select reviews.id, reviews.title, reviews.content, reviews.memberId, members.username, reviews.createdAt, reviews.updatedAt, avg(rates.rate) as rate from reviews left join members on reviews.memberId = members.id left join rates on reviews.id = rates.reviewId group by reviews.id order by reviews.createdAt desc",
     (err, result) => {
       if (result) {
         res.send(result);
@@ -209,7 +243,7 @@ app.post("/loginMember", (req, res) => {
             res.json({
               auth: true,
               token,
-              memberId: result[0].Id,
+              memberId: result[0].id,
               username,
               email: result[0].email,
               createdAt: result[0].createdAt,
