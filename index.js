@@ -27,7 +27,7 @@ app.use(passport.session());
 app.use(express.json());
 app.use(
   cors({
-    origin: "https://euphonious-syrniki-05b8a7.netlify.app/",
+    origin: "*",
     methods: "GET,POST,PUT,DELETE",
     credentials: true,
   })
@@ -55,7 +55,7 @@ app.post("/createLike", checkAuthenticated, (req, res) => {
   connection.query(
     "INSERT INTO likes (like, memberId, reviewId) VALUES (?, ?, ?)",
     [like, memberId, reviewId],
-    (err, result) => { 
+    (err, result) => {
       if (result) {
         res.send(result);
       } else {
@@ -72,9 +72,9 @@ app.post("/createLike", checkAuthenticated, (req, res) => {
   //   [like, memberId, reviewId],
   //   (err, result) => {
   //     if (result) {
-       
+
   //       if (result.affectedRows === 0) {
-          
+
   //       } else {
   //         res.send(result);
   //       }
@@ -120,8 +120,6 @@ app.post("/createRate", checkAuthenticated, (req, res) => {
             "INSERT INTO rates (rate, memberId, reviewId) VALUES (?, ?, ?)",
             [rate, memberId, reviewId],
             (err, result) => {
-
-
               if (result) {
                 res.send(result);
               } else {
