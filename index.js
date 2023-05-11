@@ -27,7 +27,7 @@ app.use(passport.session());
 app.use(express.json());
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: "https://euphonious-syrniki-05b8a7.netlify.app/",
     methods: "GET,POST,PUT,DELETE",
     credentials: true,
   })
@@ -43,10 +43,51 @@ const connection = mysql.createConnection({
 
 connection.connect((err) => {
   if (err) throw err;
-  console.log("DB connected!");
+  console.log("Mysql DB connected!");
 });
 
 ////////////api services for course project//////////////
+
+app.post("/createLike", checkAuthenticated, (req, res) => {
+  const like = req.body.like;
+  const memberId = req.body.memberId;
+  const reviewId = req.body.reviewId;
+  connection.query(
+    "INSERT INTO likes (like, memberId, reviewId) VALUES (?, ?, ?)",
+    [like, memberId, reviewId],
+    (err, result) => { 
+      if (result) {
+        res.send(result);
+      } else {
+        res.status(err.status || 500).json({
+          status: err.status,
+          message: err.message,
+        });
+      }
+    }
+  );
+
+  // connection.query(
+  //   "update likes set like = ? where memberId= ? and reviewId = ?",
+  //   [like, memberId, reviewId],
+  //   (err, result) => {
+  //     if (result) {
+       
+  //       if (result.affectedRows === 0) {
+          
+  //       } else {
+  //         res.send(result);
+  //       }
+  //     } else {
+  //       console.log(err)
+  //       res.status(err.status || 500).json({
+  //         status: err.status,
+  //         message: err.message,
+  //       });
+  //     }
+  //   }
+  // );
+});
 
 app.get("/topRated", (req, res) => {
   connection.query(
@@ -79,6 +120,8 @@ app.post("/createRate", checkAuthenticated, (req, res) => {
             "INSERT INTO rates (rate, memberId, reviewId) VALUES (?, ?, ?)",
             [rate, memberId, reviewId],
             (err, result) => {
+
+
               if (result) {
                 res.send(result);
               } else {
